@@ -1,0 +1,34 @@
+name: Build
+
+env:
+  FORCE_COLOR: 2
+  NODE: 20
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE }}
+          cache: yarn
+      - run: yarn install
+      - run: yarn prepublishOnly
+      - run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: svgo-${{ github.sha }}
+          path: "*.tgz"
+          if-no-files-found: error
+          retention-days: 1
